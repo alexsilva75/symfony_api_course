@@ -6,7 +6,16 @@ use App\Repository\BlogPostRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 #[ORM\Entity(repositoryClass: BlogPostRepository::class)]
+#[ApiResource(
+        //collectionOperations: ['get' => ['normalization_context' => ['groups' => 'blog_posts:list']]],
+        //itemOperations: ['get' => ['normalization_context' => ['groups' => 'blog_posts:item']]],
+        //order: ['year' => 'DESC', 'city' => 'ASC'],
+        //paginationEnabled: true,
+    )]
 class BlogPost
 {
     #[ORM\Id]

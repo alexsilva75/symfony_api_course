@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpFoundation\Response;
 
 #[Route('/blog', name: 'blog_')]
 class BlogController extends AbstractController
@@ -32,17 +34,24 @@ class BlogController extends AbstractController
     }
 
     #[Route('/post/{id}', name: 'blog_by_id', requirements: ['id' => "\d+"], methods: ['GET']  )]
-    public function post($id, BlogPostRepository $blogPostRepository){
+    public function post(
+    BlogPost $post // Needs composer require sensio/framework-extra-bundle
+    ){
         return $this->json([
-            'blog_post' => $blogPostRepository->find($id),
+            'blog_post' => $post//$blogPostRepository->find($id),
           
         ]);
     }
 
     #[Route('/post/{slug}', name: 'by_slug', methods: ['GET'])]
-    public function postBySlug($slug, BlogPostRepository $blogPostRepository){
+    /**
+     * @ParamConverter("post", class="App\Entity\BlogPost")
+     */
+    public function postBySlug(
+     $post // Needs composer require sensio/framework-extra-bundle
+    ){
         return $this->json([
-            'blog_post' => $blogPostRepository->findOneBy(['slug' => $slug]),
+            'blog_post' => $post //$blogPostRepository->findOneBy(['slug' => $slug]),
             
         ]);
     }
@@ -55,5 +64,22 @@ class BlogController extends AbstractController
         $blogPostRepository->add($blogPost, true);
 
         return $this->json($blogPost);
+    }
+
+    #[Route('/post/{id}', name: '_delete', methods:['DELETE'])]
+    public function delete(BlogPost $post, BlogPostRepository $blogPostRepository){
+        try {
+            //code...
+            $blogPostRepository->remove($post, true);
+
+            //return $this->json(['status' =>'OK', 'message' => 'The record was deleted successfully!'],200);
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+
+        } catch (\Throwable $th) {
+            //throw $th;
+            return $this->json(['status' =>'ERROR', 'message' => 'Error deleting BlogPost record']);
+        }
+        
+
     }
 }
